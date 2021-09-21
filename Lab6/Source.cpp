@@ -26,12 +26,11 @@ void draw_ship(int x, int y);
 
 void clrscr();
 
-void shootBullet(int index);
+void updateBullet(int index);
 
 int main()
 {
 	Setup();
-
 	do
 	{
 		clrscr();
@@ -64,26 +63,33 @@ int main()
 			}
 			fflush(stdin);
 		}
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < MAX_BULLETS; i++)
 		{
-			shootBullet(i);
+			updateBullet(i);
 		}
 		if (dir == 0)
 		{
 			draw_ship(x, y);
 		}
-		if (dir == 1 && x > 0) {
-			draw_ship(--x, y);
+		if (dir == 1) {
+			if (x > 0)
+			{
+				draw_ship(--x, y);
+			}
+			else { draw_ship(++x, y); dir = 0; }
 		}
-		else { draw_ship(x, y); }
-		if (dir == 2 && x < 111) {
-			draw_ship(++x, y);
+		if (dir == 2 ) 
+		{
+			if (x < 111) 
+			{
+				draw_ship(++x, y);
+			}
+			else { draw_ship(--x, y); dir = 0; }
 		}
-		else { draw_ship(x, y); }
-
-		Sleep(50);
+		Sleep(100);
 	} while (ch != 'x');
 
+	setcolor(7, 0);
 	return 0;
 }
 
@@ -132,7 +138,7 @@ void setcolor(int fg, int bg)
 	SetConsoleTextAttribute(hConsole, bg * 16 + fg);
 }
 
-void shootBullet(int index)
+void updateBullet(int index)
 {
 	if (bullets[index].alive)
 	{
