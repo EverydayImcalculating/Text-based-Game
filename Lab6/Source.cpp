@@ -1,6 +1,7 @@
 #include <iostream>
 #include <windows.h>
 #include <conio.h>
+using namespace std;
 
 int x, y;
 char ch = ' ';
@@ -120,7 +121,7 @@ void draw_ship(int x, int y)
 {
 	setcolor(2, 4);
 	gotoxy(x, y);
-	std::cout << "<'-(0)-'>";
+	cout << "<'-(0)-'>";
 }
 
 void setcursor(bool visible)
@@ -143,11 +144,11 @@ void updateBullet(int index)
 	if (bullets[index].alive)
 	{
 		gotoxy(bullets[index].xBull, bullets[index].yBull);
-		std::cout << " ";
+		cout << " ";
 		if (bullets[index].yBull > 0)
 		{
 			gotoxy(bullets[index].xBull, --bullets[index].yBull);
-			std::cout << "\'";
+			cout << "\'";
 		}
 		else
 		{
