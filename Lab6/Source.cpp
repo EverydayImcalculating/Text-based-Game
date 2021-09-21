@@ -5,16 +5,16 @@
 int x, y;
 char ch = ' ';
 int dir;
-int fire;
 
+const int MAX_BULLETS = 5;
 
 struct Bullet
 {
-	int xPos = 0;
-	int yPos = 0;
+	int xBull = 0;
+	int yBull = 0;
 	int alive = 0;
 
-} bullets[5];
+} bullets[MAX_BULLETS];
 
 
 void Setup();
@@ -50,12 +50,12 @@ int main()
 				dir = 0;
 				break;
 			case ' ':
-				for (int i = 0; i < 5; i++)
+				for (int i = 0; i < MAX_BULLETS; i++)
 				{
 					if (bullets[i].alive == 0)
 					{
-						bullets[i].xPos = x + 4;
-						bullets[i].yPos = y;
+						bullets[i].xBull = x + 4;
+						bullets[i].yBull = y;
 						bullets[i].alive = 1;
 						break;
 					}
@@ -136,11 +136,11 @@ void shootBullet(int index)
 {
 	if (bullets[index].alive)
 	{
-		gotoxy(bullets[index].xPos, bullets[index].yPos);
+		gotoxy(bullets[index].xBull, bullets[index].yBull);
 		std::cout << " ";
-		if (bullets[index].yPos > 0)
+		if (bullets[index].yBull > 0)
 		{
-			gotoxy(bullets[index].xPos, --bullets[index].yPos);
+			gotoxy(bullets[index].xBull, --bullets[index].yBull);
 			std::cout << "\'";
 		}
 		else
