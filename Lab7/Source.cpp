@@ -2,7 +2,6 @@
 #include <windows.h>
 #include <time.h>
 #include <conio.h>
-#include <thread>
 using namespace std;
 
 int x, y;
@@ -65,7 +64,6 @@ int main()
 				dir = 0;
 				break;
 			case ' ':
-				Beep(500, 100);
 				for (int i = 0; i < MAX_BULLETS; i++)
 				{
 					if (bullets[i].alive == 0)
@@ -73,6 +71,10 @@ int main()
 						bullets[i].xBull = x + 4;
 						bullets[i].yBull = y - 1;
 						bullets[i].alive = 1;
+						if (bullets[i].alive == 1)
+						{
+							Beep(500, 100);
+						}
 						break;
 					}
 				}
@@ -238,5 +240,3 @@ void updateScore()
 	cout << score.scorecount;
 	score.hit = 0;
 }
-
-
