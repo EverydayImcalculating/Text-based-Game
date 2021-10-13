@@ -89,124 +89,124 @@ void star_fall()
 	}
 }
 
-	void draw(const char* strCh, COORD coord, unsigned short color = 7)
+void draw(const char* strCh, COORD coord, unsigned short color = 7)
+{
+	int x = coord.X;
+	int y = coord.Y;
+	for (int i = 0; i < strlen(strCh); i++)
 	{
-		int x = coord.X;
-		int y = coord.Y;
-		for (int i = 0; i < strlen(strCh); i++)
+		if (x >= 0 && x < screen_x)
 		{
-			if (x >= 0 && x < screen_x)
-			{
-				consoleBuffer[x + screen_x * y].Char.AsciiChar = strCh[i];
-				consoleBuffer[x + screen_x * y].Attributes = color;
-			}
-			x++;
+			consoleBuffer[x + screen_x * y].Char.AsciiChar = strCh[i];
+			consoleBuffer[x + screen_x * y].Attributes = color;
 		}
+		x++;
 	}
+}
 
-	int setMode()
+int setMode()
+{
+	rHnd = GetStdHandle(STD_INPUT_HANDLE);
+	fdwMode = ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
+	SetConsoleMode(rHnd, fdwMode);
+	return 0;
+}
+
+
+char cursor(int x, int y)
+{
+	HANDLE hStd = GetStdHandle(STD_OUTPUT_HANDLE);
+	char buf[2]; COORD c = { x,y }; DWORD num_read;
+	if (!ReadConsoleOutputCharacter(hStd, (LPTSTR)buf, 1, c, (LPDWORD)&num_read))
+		return '\0';
+	else
+		return buf[0];
+}
+
+
+
+void setcursor(bool visible)
+{
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_CURSOR_INFO lpCursor;
+	lpCursor.dwSize = 100;
+	lpCursor.bVisible = visible;
+	SetConsoleCursorInfo(consoleHandle, &lpCursor);
+}
+
+
+
+int setConsole(int x, int y)
+{
+	wHnd = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleWindowInfo(wHnd, TRUE, &windowSize);
+	SetConsoleScreenBufferSize(wHnd, bufferSize);
+	return 0;
+}
+
+
+int main()
+{
+	Setup();
+	while (gameOn && live > 0)
 	{
-		rHnd = GetStdHandle(STD_INPUT_HANDLE);
-		fdwMode = ENABLE_EXTENDED_FLAGS | ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
-		SetConsoleMode(rHnd, fdwMode);
-		return 0;
-	}
-
-
-	char cursor(int x, int y)
-	{
-		HANDLE hStd = GetStdHandle(STD_OUTPUT_HANDLE);
-		char buf[2]; COORD c = { x,y }; DWORD num_read;
-		if (!ReadConsoleOutputCharacter(hStd, (LPTSTR)buf, 1, c, (LPDWORD)&num_read))
-			return '\0';
-		else
-			return buf[0];
-	}
-
-
-
-	void setcursor(bool visible)
-	{
-		HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-		CONSOLE_CURSOR_INFO lpCursor;
-		lpCursor.dwSize = 100;
-		lpCursor.bVisible = visible;
-		SetConsoleCursorInfo(consoleHandle, &lpCursor);
-	}
-
-
-
-	int setConsole(int x, int y)
-	{
-		wHnd = GetStdHandle(STD_OUTPUT_HANDLE);
-		SetConsoleWindowInfo(wHnd, TRUE, &windowSize);
-		SetConsoleScreenBufferSize(wHnd, bufferSize);
-		return 0;
-	}
-
-
-	int main()
-	{
-		Setup();
-		while (gameOn && live > 0)
+		GetNumberOfConsoleInputEvents(rHnd, &numEvents);
+		if (numEvents != 0)
 		{
-			GetNumberOfConsoleInputEvents(rHnd, &numEvents);
-			if (numEvents != 0)
+			INPUT_RECORD* eventBuffer = new INPUT_RECORD[numEvents];
+			ReadConsoleInput(rHnd, eventBuffer, numEvents, &numEventsRead);
+			for (DWORD i = 0; i < numEventsRead; ++i)
 			{
-				INPUT_RECORD* eventBuffer = new INPUT_RECORD[numEvents];
-				ReadConsoleInput(rHnd, eventBuffer, numEvents, &numEventsRead);
-				for (DWORD i = 0; i < numEventsRead; ++i)
+				if (eventBuffer[i].EventType == KEY_EVENT && eventBuffer[i].Event.KeyEvent.bKeyDown == true)
 				{
-					if (eventBuffer[i].EventType == KEY_EVENT && eventBuffer[i].Event.KeyEvent.bKeyDown == true)
+					if (eventBuffer[i].Event.KeyEvent.wVirtualKeyCode == VK_ESCAPE)
 					{
-						if (eventBuffer[i].Event.KeyEvent.wVirtualKeyCode == VK_ESCAPE)
-						{
-							gameOn = false;
-						}
-						if (eventBuffer[i].Event.KeyEvent.wVirtualKeyCode == 0x43)
-						{
-							color = randrange(1, 15);
-						}
+						gameOn = false;
 					}
-					else if (eventBuffer[i].EventType == MOUSE_EVENT)
+					if (eventBuffer[i].Event.KeyEvent.wVirtualKeyCode == 0x43)
 					{
-						int posx = eventBuffer[i].Event.MouseEvent.dwMousePosition.X;
-						int posy = eventBuffer[i].Event.MouseEvent.dwMousePosition.Y;
-						if (eventBuffer[i].Event.MouseEvent.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
-						{
-							color = randrange(1, 15);
-						}
-						else if (eventBuffer[i].Event.MouseEvent.dwEventFlags & MOUSE_MOVED)
-						{
-							playerPos = { short(posx),short(posy) };
-							playerPos.X -= 3;
-						}
+						color = randrange(1, 15);
 					}
 				}
-				delete[] eventBuffer;
+				else if (eventBuffer[i].EventType == MOUSE_EVENT)
+				{
+					int posx = eventBuffer[i].Event.MouseEvent.dwMousePosition.X;
+					int posy = eventBuffer[i].Event.MouseEvent.dwMousePosition.Y;
+					if (eventBuffer[i].Event.MouseEvent.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED)
+					{
+						color = randrange(1, 15);
+					}
+					else if (eventBuffer[i].Event.MouseEvent.dwEventFlags & MOUSE_MOVED)
+					{
+						playerPos = { short(posx),short(posy) };
+						playerPos.X -= 3;
+					}
+				}
 			}
-
-			star_fall();
-			clear_buffer();
-			for (int i = 0; i < scount; i++)
-			{
-				draw(starCh, star[i].position);
-			}
-			draw(playerShip, playerPos, color);
-			fill_buffer_to_console();
-			Sleep(100);
+			delete[] eventBuffer;
 		}
 
-		return 0;
+		star_fall();
+		clear_buffer();
+		for (int i = 0; i < scount; i++)
+		{
+			draw(starCh, star[i].position);
+		}
+		draw(playerShip, playerPos, color);
+		fill_buffer_to_console();
+		Sleep(100);
 	}
 
-	void Setup()
-	{
-		srand(time(NULL));
-		setConsole(screen_x, screen_y);
-		setMode();
-		init_star();
-	}
+	return 0;
+}
+
+void Setup()
+{
+	srand(time(NULL));
+	setConsole(screen_x, screen_y);
+	setMode();
+	init_star();
+}
 
 
 
